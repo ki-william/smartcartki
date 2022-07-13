@@ -1,2 +1,1 @@
-# smartcartki
- smart cart project
+# smartCart

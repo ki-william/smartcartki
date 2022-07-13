@@ -1,0 +1,30 @@
+[
+   {
+      "model":"base.product",
+      "pk":8,
+      "fields":{
+         "name":"sa "
+      }
+   },
+   {
+      "model":"base.product",
+      "pk":9,
+      "fields":{
+         "name":"edwed"
+      }
+   },
+   {
+      "model":"base.product",
+      "pk":10,
+      "fields":{
+         "name":"dwede"
+      }
+   },
+   {
+      "model":"base.product",
+      "pk":11,
+      "fields":{
+         "name":"dwedw"
+      }
+   }
+]
