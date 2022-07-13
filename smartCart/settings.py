@@ -134,6 +134,9 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 STATICFILES_DIRS = [
     BASE_DIR / "static",
+    BASE_DIR / "media",
+    BASE_DIR / "media/products",
+
 ]
 
 # Default primary key field type

@@ -2,8 +2,8 @@ from rest_framework import status
 from .models import *
 from django.http import JsonResponse
 from django.shortcuts import render
-from .models import Cart, Order, OrderItem, Product
-from .serializers import ProductSerializer , OrderSerializer,UserProfileSerializer,RateSerializer
+from .models import Cart, Order, OrderItem, Product, Rate
+from .serializers import ProductSerializer , OrderSerializer,UserProfileSerializer,RateSerializer,productPictureSerialiser,Cartserialiser
 from rest_framework.renderers import JSONRenderer
 from rest_framework.parsers import JSONParser
 from django.views.decorators.csrf import csrf_exempt
@@ -17,6 +17,8 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
+from django.templatetags.static import static
+from django.utils.encoding import smart_str
 
 
 # @csrf_exempt
@@ -73,8 +75,8 @@ def register_user(request):
 @permission_classes([IsAuthenticated])
 @api_view(['GET'])
 def user_profile(request):
-    print("=========================huh22uhu=================================")
-    print(request.user.username)
+    #print("=========================huh22uhu=================================")
+    #print(request.user.username)
     user_profile  = UserProfile.objects.get(username=request.GET['username'])
     serializer = UserProfileSerializer(user_profile)
     return JsonResponse(serializer.data, safe=False)
@@ -87,10 +89,20 @@ def products_list(request):
     if request.method == 'GET':
         product = Product.objects.all()
         serializer = ProductSerializer(product, many=True)
-        return JsonResponse(serializer.data, safe=False)
+        serlializer_data= serializer.data
+        for i in range(0,len(serlializer_data)):
+            image = serlializer_data[i]['image'].replace('media','static')
+            serlializer_data[i]['image'] = image
+        #print (static(smart_str(image[0])))
+        #print("888888888888888888888888888888888")
+        #print (smart_str(image[0]))
+        #print(list(UserProfile.objects.all().values_list('username')))
+        return JsonResponse(serlializer_data, safe=False)
 
 
-   
+##################### Ordering Process START #####################
+
+##a function that returns  all the orders in the DB {id,customer->,ordering date,status(done onot),transaction id} 
 @csrf_exempt
 @api_view(['GET'])
 def orders_list(request):   
@@ -183,9 +195,11 @@ def adding_orderItem(request):
             f.save()        
         else:
             order.orderItems.create(product=product,quantity=1)     
+        product_serializer = ProductSerializer(product)
         order_serializer = OrderSerializer(order)
-        return JsonResponse(order_serializer.data)
+        return JsonResponse(order_serializer.data,product_serializer.data[''])
 
+##################### Ordering Process END #####################
 
 
 @csrf_exempt
@@ -194,8 +208,15 @@ def get_all_users(request):
     if request.method == 'GET':
         users = UserProfile.objects.all()
         serialzer = UserProfileSerializer(users,many=True)
+        serlializer_data= serialzer.data
+        
+        for i in range(0,len(serlializer_data)):
+            if serlializer_data[i]['image'] is not None : 
+                image = serlializer_data[i]['image'].replace('media','static')
+                serlializer_data[i]['image'] = image
+        print(serlializer_data[0]['image'])
         # data = JSONParser().parse(users)
-        return JsonResponse(serialzer.data,safe=False)
+        return JsonResponse(serlializer_data,safe=False)
 
 
 @csrf_exempt
@@ -209,7 +230,7 @@ def get_all_rates(request):
 
 
 
-#######returns all products in the store#####
+##############################################################
 @csrf_exempt
 @api_view(['GET'])
 def get_all_products(request):
@@ -219,8 +240,104 @@ def get_all_products(request):
         return JsonResponse(serialzer.data,safe=False)
 
 
+@csrf_exempt
+@api_view(['GET'])
+def mlmodel(request):
+    if request.method == 'GET':
+        products = Rate.objects.all()
+        serialzer = RateSerializer(products,many=True)
+        return JsonResponse(serialzer.data,safe=False)
 
-# #######returns all products in the current actuve virtual cart######
+
+
+@csrf_exempt
+@api_view(['GET'])
+def specificproduct(request):
+    #print(request.user.username)
+    product  = Product.objects.get(name=request.GET['name'])
+    print("ffffff")
+    print(product)
+    serializer = ProductSerializer(product)
+    return JsonResponse(serializer.data, safe=False)
+
+
+@csrf_exempt
+@api_view(['GET'])
+def carts(request):   
+    if request.method == 'GET':
+        cart = Cart.objects.all()
+        isreserved = Cart.objects.values_list('isreserved')
+        serializer = Cartserialiser(cart, many=True)
+        serilizer_data = serializer.data
+        user = Cart.objects.values_list('currentuser')
+        print(isreserved)
+        for x in range(0,len(serilizer_data)):
+            print(isreserved[x][0])
+            if isreserved[x][0] :
+                username = UserProfile.objects.get(id=user[x][0])
+                serilizer_data[x]['currentuser']=smart_str(username) 
+            else : 
+                serilizer_data[x]['currentuser']="NoUser"          
+        return JsonResponse(serilizer_data, safe=False)
+
+@csrf_exempt
+@api_view(['GET'])
+def cart(request):   
+    if request.method == 'GET':
+        cart = Cart.objects.filter(cartnumber=request.GET['cartnumber'])
+        isreserved = Cart.objects.values_list('isreserved')
+        serializer = Cartserialiser(cart, many=True)
+        serilizer_data = serializer.data
+        user = Cart.objects.values_list('currentuser')
+        print(isreserved)
+        for x in range(0,len(serilizer_data)):
+            if isreserved[x][0] :
+                username = UserProfile.objects.get(id=user[x][0])
+                serilizer_data[x]['currentuser']=smart_str(username) 
+            else : 
+                serilizer_data[x]['currentuser']="NoUser"          
+        return JsonResponse(serilizer_data, safe=False)
+ 
+
+@csrf_exempt
+@permission_classes([IsAuthenticated])
+@api_view(['POST'])
+def reservercart(request):
+    if request.method == 'POST':
+        cartnum = request.data.get('cartnumber')
+        currentu = request.data.get('username')
+        print(cartnum,'---',currentu)
+        try:    
+            Cart.objects.filter(cartnumber=cartnum).update(isreserved=True)
+            userid = UserProfile.objects.filter(username=currentu).values_list('id')
+            print(userid)
+            Cart.objects.filter(cartnumber=cartnum).update(currentuser=userid)
+        except Cart.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        cartafter = Cart.objects.all().filter(cartnumber=cartnum)
+        serializerc = Cartserialiser(cartafter, many=True)
+        return JsonResponse(serializerc.data, safe=False)
+        
+
+@csrf_exempt
+@permission_classes([IsAuthenticated])
+@api_view(['POST'])
+def unreservecart(request):
+    if request.method == 'POST':
+        cartnum = request.data.get('cartnumber')
+        currentu = request.data.get('username')
+        print(cartnum,'---',currentu)
+        try:    
+            Cart.objects.filter(cartnumber=cartnum).update(isreserved=False)
+            #userid = UserProfile.objects.filter(username=currentu).values_list('id')
+            #Cart.objects.filter(cartnumber=cartnum).update(currentuser="NoUse")
+        except Cart.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        cartafter = Cart.objects.all().filter(cartnumber=cartnum)
+        serializerc = Cartserialiser(cartafter, many=True)
+        return JsonResponse(serializerc.data, safe=False)
+  
+ # #######returns all products in the current actuve virtual cart######
 # @csrf_exempt
 # @api_view(['GET'])
 # def get_all_products(request):

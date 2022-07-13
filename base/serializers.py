@@ -1,6 +1,6 @@
 from itertools import product
 from rest_framework import serializers
-from .models import OrderItem, Product, Order, UserProfile,Rate
+from .models import Cart, OrderItem, Product, Order, UserProfile,Rate
 from django.contrib.auth.models import User
 from django.utils import timezone
 
@@ -20,6 +20,12 @@ class UserProfileSerializer(serializers.ModelSerializer):
         user.save()
         return user
 
+class UserProfileSerializer2(serializers.ModelSerializer):
+
+    class Meta:
+        model = UserProfile
+        fields = ('username')
+
 
 #
 # class UserProfileSerializer(serializers.ModelSerializer):
@@ -32,7 +38,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
 class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
-        fields = ['id', 'name', 'description', 'price', 'Quantity', 'image']
+        fields = ['id', 'name', 'description', 'price', 'Quantity', 'image','weight','barcode']
 
 
 class OrderItemSerializer(serializers.ModelSerializer):
@@ -49,12 +55,11 @@ class OrderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = ['id', 'customer', 'cart', 'date_ordered', 'complete','orderItems']
+        fields = ['id', 'customer', 'cart', 'date_ordered', 'complete','orderItems','transaction_id']
 
 class RateSerializer(serializers.ModelSerializer):
     customer = serializers.StringRelatedField(read_only=True)
     product = serializers.StringRelatedField(read_only=True)
-
    
     class Meta:
         model = Rate
@@ -73,3 +78,11 @@ class productPictureSerialiser(serializers.ModelSerializer):
 
     def get_image_url(self, obj):
         return obj.image.url
+
+
+
+class Cartserialiser(serializers.ModelSerializer):
+    #currentuser = UserProfileSerializer2(many=True, read_only=True)
+    class Meta:
+        model = Cart
+        fields = ['cartnumber', 'barcode', 'currentuser','isreserved']

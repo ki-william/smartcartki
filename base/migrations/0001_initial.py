@@ -34,7 +34,7 @@ class Migration(migrations.Migration):
                 ('image', models.ImageField(blank=True, upload_to='users')),
                 ('groups', models.ManyToManyField(blank=True, help_text='The groups this user belongs to. A user will get all permissions granted to each of their groups.', related_name='user_set', related_query_name='user', to='auth.group', verbose_name='groups')),
                 ('user_permissions', models.ManyToManyField(blank=True, help_text='Specific permissions for this user.', related_name='user_set', related_query_name='user', to='auth.permission', verbose_name='user permissions')),
-            ],
+            ], 
             options={
                 'verbose_name': 'user',
                 'verbose_name_plural': 'users',
@@ -75,7 +75,7 @@ class Migration(migrations.Migration):
             ],
         ),
         migrations.CreateModel(
-            name='OrderItem',
+            name='OrderItem', ##OrderItem = Virual Cart!##
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('quantity', models.IntegerField(blank=True, default=0, null=True)),

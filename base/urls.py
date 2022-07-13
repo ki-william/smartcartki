@@ -15,12 +15,24 @@ urlpatterns = [
 
 
     path('api/products', views.products_list , name="product-list"),
+
     path('api/orders', views.orders_list , name="orders-list"),
 
     path('api/all-users', views.get_all_users, name="all-users"),
     path('api/all-rates', views.get_all_rates, name="all-rates"),
     
     path('api/all-rates', views.get_all_products, name="all-products"),
+
+    path('api/ml-ratings', views.mlmodel, name="mlmodel"),
+    path('api/product', views.specificproduct, name="specificproduct"),
+
+    path('api/carts', views.carts, name="carts"),
+
+    path('api/cart', views.cart, name="cart"),
+
+    path('api/reservercart', views.reservercart, name="reservercart"),
+
+    path('api/unreservercart', views.unreservecart, name="unreservecart"),
 
     path('__debug__/', include('debug_toolbar.urls')),
 
