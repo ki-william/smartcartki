@@ -160,10 +160,12 @@ def get_order_details(request,id):
 def create_order(request):
     if request.method == 'POST':
         try : 
-            cart = Cart.objects.get(id = request.data.get("cart"))
+            cartnum = request.data.get("cart")
+            print(cartnum)
+            cart = Cart.objects.get(cartnumber = cartnum)
         except Cart.DoesNotExist:
             return Response ( {"Error":" Cart dosn't exist "}) 
-        if cart.occupied :
+        if cart.isreserved :
            return JsonResponse({"message":"cart not availabe"})
         else:
             order = Order.objects.create(customer=request.user,cart=cart)
@@ -285,7 +287,7 @@ def carts(request):
 def cart(request):   
     if request.method == 'GET':
         cart = Cart.objects.filter(cartnumber=request.GET['cartnumber'])
-        isreserved = Cart.objects.values_list('isreserved')
+        isreserved = cart.values_list('isreserved')
         serializer = Cartserialiser(cart, many=True)
         serilizer_data = serializer.data
         user = Cart.objects.values_list('currentuser')
@@ -345,3 +347,26 @@ def unreservecart(request):
 #         users = Product.objects.all()
 #         serialzer = ProductSerializer(users,many=True)
 #         return JsonResponse(serialzer.data,safe=False)
+
+
+##Nabil latest update for views 
+
+temp=[]   
+@api_view(['POST','GET'])
+def send_and_receive(request):     
+    if request.method == 'POST':  
+        token = JSONParser().parse(request)
+        if len(temp) < 3 :
+            temp.append(token)
+            return JsonResponse(token,safe=False)
+        else :
+            return JsonResponse(token,safe=False)
+    elif request.method == 'GET':
+        if len(temp)== 0:
+            return JsonResponse("0",safe=False)
+        else :
+            response = temp[0]
+            temp.clear()
+            return JsonResponse(response,safe=False)
+            
+
