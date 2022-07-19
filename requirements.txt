@@ -21,3 +21,5 @@ urllib3==1.26.9
 virtualenv==20.14.0
 whitenoise==6.1.0
 django-debug-toolbar==3.5.0
+django-cors-headers==3.12.0
+django-debug-toolbar==3.5.0

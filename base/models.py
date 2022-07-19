@@ -25,7 +25,7 @@ class Product(models.Model):
 class UserProfile(AbstractUser):
     image = models.ImageField(upload_to="users",
                               blank=True)
-    balance = models.DecimalField(default=10000,
+    balance = models.DecimalField(default=0,
                                   max_digits=99,
                                   decimal_places=3)
 

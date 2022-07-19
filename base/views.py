@@ -354,26 +354,7 @@ def unreservecart(request):
 #         return JsonResponse(serialzer.data,safe=False)
 
 
-##Nabil latest update for views 
-
-temp=[]   
-@api_view(['POST','GET'])
-def send_and_receive(request):     
-    if request.method == 'POST':  
-        token = JSONParser().parse(request)
-        if len(temp) < 3 :
-            temp.append(token)
-            return JsonResponse(token,safe=False)
-        else :
-            return JsonResponse(token,safe=False)
-    elif request.method == 'GET':
-        if len(temp)== 0:
-            return JsonResponse("0",safe=False)
-        else :
-            response = temp[0]
-            temp.clear()
-            return JsonResponse(response,safe=False)
-            
+          
 #added new serializer(recommendationsserialiser) and two imports in views(random,orderdictionary) and added the url to urls.py
 @csrf_exempt
 @api_view(['GET'])
@@ -437,4 +418,103 @@ def recharge(request):
             else :     
                     return http.JsonResponse({"Error":"Username or transaction id is wrong","Paymentresponse":"%s"%response_get_data},safe=False)
 
+
+    
+temp=[]   
+@api_view(['POST','GET'])
+def send_and_receive(request):     
+    if request.method == 'POST':  
+        token = JSONParser().parse(request)
+        if len(temp) < 3 :
+            temp.append(token)
+            return JsonResponse(token,safe=False)
+        else :
+            return JsonResponse(token,safe=False)
+    elif request.method == 'GET':
+        if len(temp)== 0:
+            return JsonResponse("0",safe=False)
+        else :
+            response = temp[0]
+            temp.clear()
+            return JsonResponse(response,safe=False)
+            
+         
+
+
+temp1=[]   
+@api_view(['POST','GET'])
+def send_and_receive_1(request):     
+    if request.method == 'POST':  
+        token = JSONParser().parse(request)
+        if len(temp1) < 3 :
+            temp1.append(token)
+            return JsonResponse(token,safe=False)
+        else :
+            return JsonResponse(token,safe=False)
+    elif request.method == 'GET':
+        if len(temp1)== 0:
+            return JsonResponse("0",safe=False)
+        else :
+            response = temp1[0]
+            temp1.clear()
+            return JsonResponse(response,safe=False)
+            
+temp2=[]   
+@api_view(['POST','GET'])
+def send_and_receive_2(request):     
+    if request.method == 'POST':  
+        token = JSONParser().parse(request)
+        if len(temp2) < 3 :
+            temp2.append(token)
+            return JsonResponse(token,safe=False)
+        else :
+            return JsonResponse(token,safe=False)
+    elif request.method == 'GET':
+        if len(temp2)== 0:
+            return JsonResponse("0",safe=False)
+        else :
+            response = temp2[0]
+            temp2.clear()
+            return JsonResponse(response,safe=False)
+
+
+
+temp3=[]   
+@api_view(['POST','GET'])
+def send_and_receive_3(request):     
+    if request.method == 'POST':  
+        token = JSONParser().parse(request)
+        if len(temp3) < 3 :
+            temp3.append(token)
+            return JsonResponse(token,safe=False)
+        else :
+            return JsonResponse(token,safe=False)
+    elif request.method == 'GET':
+        if len(temp3)== 0:
+            return JsonResponse("0",safe=False)
+        else :
+            response = temp3[0]
+            temp3.clear()
+            return JsonResponse(response,safe=False)
+
+
+
+
+temp4=[]   
+@api_view(['POST','GET'])
+def send_and_receive_4(request):     
+    if request.method == 'POST':  
+        token = JSONParser().parse(request)
+        if len(temp4) < 3 :
+            temp4.append(token)
+            return JsonResponse(token,safe=False)
+        else :
+            return JsonResponse(token,safe=False)
+    elif request.method == 'GET':
+        if len(temp4)== 0:
+            return JsonResponse("0",safe=False)
+        else :
+            response = temp4[0]
+            temp4.clear()
+            return JsonResponse(response,safe=False)
 

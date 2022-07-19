@@ -41,10 +41,18 @@ urlpatterns = [
     path('api/logout-cart', views.send_and_receive, name="logout-cart"), 
     path('api/confirm-logout-cart', views.send_and_receive, name="confirm-logout-cart"),
 
+
+
+
+    path('api/login-cart', views.send_and_receive_1, name="login-cart"),
+    path('api/confirm-login-cart', views.send_and_receive_2, name="confirm-login-cart"),
+    path('api/logout-cart', views.send_and_receive_3, name="logout-cart"), 
+    path('api/confirm-logout-cart', views.send_and_receive_4, name="confirm-logout-cart"),
+    
+
     path('api/recommendations', views.recommendations, name="recommendations"),
-
     path('api/recharge', views.recharge, name="recharge"),
-
+    
     path('__debug__/', include('debug_toolbar.urls')),
 
 ]
