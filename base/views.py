@@ -2,8 +2,8 @@ from rest_framework import status
 from .models import *
 from django.http import JsonResponse
 from django.shortcuts import render
-from .models import Cart, Order, OrderItem, Product, Rate
-from .serializers import ProductSerializer , OrderSerializer,UserProfileSerializer,RateSerializer,productPictureSerialiser,Cartserialiser
+from .models import Cart, Order, OrderItem, Product, Rate,UserProfile, Usedtransactions
+from .serializers import ProductSerializer , OrderSerializer,UserProfileSerializer,RateSerializer,productPictureSerialiser,Cartserialiser,recommendationsserialiser
 from rest_framework.renderers import JSONRenderer
 from rest_framework.parsers import JSONParser
 from django.views.decorators.csrf import csrf_exempt
@@ -20,6 +20,11 @@ from rest_framework.response import Response
 from django.templatetags.static import static
 from django.utils.encoding import smart_str
 
+from random import randint
+from collections import OrderedDict
+
+from django import http
+import requests
 
 # @csrf_exempt
 # def user_login(request):
@@ -160,10 +165,12 @@ def get_order_details(request,id):
 def create_order(request):
     if request.method == 'POST':
         try : 
-            cart = Cart.objects.get(id = request.data.get("cart"))
+            cartnum = request.data.get("cart")
+            print(cartnum)
+            cart = Cart.objects.get(cartnumber = cartnum)
         except Cart.DoesNotExist:
             return Response ( {"Error":" Cart dosn't exist "}) 
-        if cart.occupied :
+        if cart.isreserved :
            return JsonResponse({"message":"cart not availabe"})
         else:
             order = Order.objects.create(customer=request.user,cart=cart)
@@ -285,7 +292,7 @@ def carts(request):
 def cart(request):   
     if request.method == 'GET':
         cart = Cart.objects.filter(cartnumber=request.GET['cartnumber'])
-        isreserved = Cart.objects.values_list('isreserved')
+        isreserved = cart.values_list('isreserved')
         serializer = Cartserialiser(cart, many=True)
         serilizer_data = serializer.data
         user = Cart.objects.values_list('currentuser')
@@ -345,3 +352,89 @@ def unreservecart(request):
 #         users = Product.objects.all()
 #         serialzer = ProductSerializer(users,many=True)
 #         return JsonResponse(serialzer.data,safe=False)
+
+
+##Nabil latest update for views 
+
+temp=[]   
+@api_view(['POST','GET'])
+def send_and_receive(request):     
+    if request.method == 'POST':  
+        token = JSONParser().parse(request)
+        if len(temp) < 3 :
+            temp.append(token)
+            return JsonResponse(token,safe=False)
+        else :
+            return JsonResponse(token,safe=False)
+    elif request.method == 'GET':
+        if len(temp)== 0:
+            return JsonResponse("0",safe=False)
+        else :
+            response = temp[0]
+            temp.clear()
+            return JsonResponse(response,safe=False)
+            
+#added new serializer(recommendationsserialiser) and two imports in views(random,orderdictionary) and added the url to urls.py
+@csrf_exempt
+@api_view(['GET'])
+def recommendations(request):
+    if request.method == 'GET':
+        products = Product.objects.all()
+        serialzer = recommendationsserialiser(products,many=True)
+        p1 = randint(0, len(serialzer.data)-1)
+        p2 = randint(0, len(serialzer.data)-1)
+        p3 = randint(0, len(serialzer.data)-1)
+        print(serialzer.data)
+        sz = OrderedDict()
+        sz[p1] = serialzer.data[p1]
+        sz[p2] = serialzer.data[p2]
+        sz[p3] = serialzer.data[p3]
+        return JsonResponse(sz,safe=False)
+
+## imported in view requests and http , added a table in models.py(usedtransactions), 
+@csrf_exempt
+@api_view(['GET'])
+def recharge(request):
+    if request.method == 'GET':
+        url = 'https://accept.paymob.com/api/auth/tokens'  # replace with other python app url or ip
+        request_data = {'api_key': 'ZXlKMGVYQWlPaUpLVjFRaUxDSmhiR2NpT2lKSVV6VXhNaUo5LmV5SmpiR0Z6Y3lJNklrMWxjbU5vWVc1MElpd2ljSEp2Wm1sc1pWOXdheUk2TVRVeE5EWXlMQ0p1WVcxbElqb2lhVzVwZEdsaGJDSjkuNGZMbXo5dzF0U05MdmhyMThtN0NRZ2dDalNZd0tHWHpjcjlXSV9jVG5DNUdzdzBGdjZPTWJKZFotLS1EazNRdHpBYmVVa3BKYXFfYUoxazRDVHQtX3c='}  # replace with data to be sent to other app
+        response_post = requests.post(url, json=request_data)
+        response_post_data = response_post.json()  # data returned by other app
+        token = response_post_data['token']
+        
+        
+        headers = {'authorization' : token}
+        get_data = request.GET
+        #transctionid = '47836548'
+        if ('username' not in get_data or 'transctionid'  not in get_data) :
+            return http.JsonResponse({"Error":"Username or transaction id is missing"})
+        else :
+            transctionid = get_data['transctionid']
+            usernam = get_data['username']
+            print(transctionid)
+            url2 = "https://accept.paymob.com/api/acceptance/transactions/%s"%transctionid
+            #urlspare = "https://accept.paymob.com/api/acceptance/transactions"
+            get_paramters = {'transaction_id':transctionid}
+            response_get = requests.get(url2, json=get_paramters, headers=headers)
+            response_get_data = response_get.json()
+            
+            if ('id' in response_get_data and 'success' in response_get_data) :
+                    usedtransaction = Usedtransactions.objects.filter(transactionid = transctionid).exists()
+                    print(usedtransaction)
+                    if not usedtransaction :
+                        ##add it to used transactions 
+                        Usedtransactions.objects.create(transactionid=transctionid,username =usernam )
+                        current_balance = UserProfile.objects.filter(username=usernam).values_list('balance')
+                        #print("----------",current_balance[0][0],type(current_balance[0][0]))
+                        newcredit = response_get_data ['amount_cents']/100.0
+                        new_balance  = float(current_balance[0][0]) + newcredit
+                        UserProfile.objects.filter(username=usernam).update(balance= new_balance)
+                        print(response_get_data)
+                        return http.JsonResponse({"message":"Recharged sucessfully"},safe=False)
+                    else : 
+                        #update the DB
+                        return http.JsonResponse({"Error":"Transaction ID is used before, Please try to recharge"},safe=False)
+            else :     
+                    return http.JsonResponse({"Error":"Username or transaction id is wrong","Paymentresponse":"%s"%response_get_data},safe=False)
+
+

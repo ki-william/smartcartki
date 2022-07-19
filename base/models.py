@@ -20,12 +20,12 @@ class Product(models.Model):
 
     def __str__(self):
         return self.name
-
+ 
 
 class UserProfile(AbstractUser):
     image = models.ImageField(upload_to="users",
                               blank=True)
-    balance = models.DecimalField(default=0.0,
+    balance = models.DecimalField(default=10000,
                                   max_digits=99,
                                   decimal_places=3)
 
@@ -50,9 +50,8 @@ class Order(models.Model):
     date_ordered = models.DateTimeField(auto_now_add=True)
     complete = models.BooleanField(default=False)
     transaction_id = models.CharField(max_length=100, blank=True,null=True)
+    total_price= models.IntegerField(default=0,null=True,blank=True)
 
-    class Meta:
-        ordering = ["customer", ]
 
     def __str__(self):
         return str(self.id)
@@ -65,14 +64,15 @@ class OrderItem(models.Model):
                               on_delete=models.SET_NULL,null=True)
     quantity = models.IntegerField(default=0, null=True, blank=True)
     date_added = models.DateTimeField(auto_now_add=True)
+    price = models.IntegerField(default=0, null=True, blank=True)
+
 
 rates = (
-        (1     , 1      ),
-        (2     , 2     ),
-        (3 , 3),
-        (4,4  ),
-        (5, 5),
-
+        (1,1),
+        (2,2),
+        (3,3),
+        (4,4),
+        (5,5),
     )
 class Rate (models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE,null=True)   
@@ -104,9 +104,14 @@ class Rate (models.Model):
 
 
 
-
-
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
 def create_auth_token(sender, instance=None, created=False, **kwargs):
     if created:
         Token.objects.create(user=instance)
+
+
+
+class Usedtransactions(models.Model):
+    transactionid = models.IntegerField(default=0, null=True, blank=False)
+    username = models.CharField(max_length=256)
+

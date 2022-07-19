@@ -21,7 +21,6 @@ urlpatterns = [
     path('api/all-users', views.get_all_users, name="all-users"),
     path('api/all-rates', views.get_all_rates, name="all-rates"),
     
-    path('api/all-rates', views.get_all_products, name="all-products"),
 
     path('api/ml-ratings', views.mlmodel, name="mlmodel"),
     path('api/product', views.specificproduct, name="specificproduct"),
@@ -34,7 +33,18 @@ urlpatterns = [
 
     path('api/unreservercart', views.unreservecart, name="unreservecart"),
 
-    path('__debug__/', include('debug_toolbar.urls')),
 
+
+    ##Nanil latest update for URLs
+    path('api/login-cart', views.send_and_receive, name="login-cart"),
+    path('api/confirm-login-cart', views.send_and_receive, name="confirm-login-cart"),
+    path('api/logout-cart', views.send_and_receive, name="logout-cart"), 
+    path('api/confirm-logout-cart', views.send_and_receive, name="confirm-logout-cart"),
+
+    path('api/recommendations', views.recommendations, name="recommendations"),
+
+    path('api/recharge', views.recharge, name="recharge"),
+
+    path('__debug__/', include('debug_toolbar.urls')),
 
 ]

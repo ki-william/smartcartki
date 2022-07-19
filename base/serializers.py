@@ -1,6 +1,6 @@
 from itertools import product
 from rest_framework import serializers
-from .models import Cart, OrderItem, Product, Order, UserProfile,Rate
+from .models import Cart, OrderItem, Product, Order, UserProfile,Rate,Usedtransactions
 from django.contrib.auth.models import User
 from django.utils import timezone
 
@@ -40,13 +40,18 @@ class ProductSerializer(serializers.ModelSerializer):
         model = Product
         fields = ['id', 'name', 'description', 'price', 'Quantity', 'image','weight','barcode']
 
+class ProductSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Product
+        fields = ['id', 'name', 'description', 'price', 'Quantity', 'image','weight','barcode']
+
 
 class OrderItemSerializer(serializers.ModelSerializer):
     product = serializers.StringRelatedField(read_only=True)
 
     class Meta:
         model = OrderItem
-        fields = ['product', 'quantity']
+        fields = ['product', 'quantity',"price"]
 
 
 class OrderSerializer(serializers.ModelSerializer):
@@ -55,7 +60,7 @@ class OrderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = ['id', 'customer', 'cart', 'date_ordered', 'complete','orderItems','transaction_id']
+        fields = ['id', 'customer', 'cart', 'date_ordered', 'complete','orderItems','total_price','transaction_id']
 
 class RateSerializer(serializers.ModelSerializer):
     customer = serializers.StringRelatedField(read_only=True)
@@ -86,3 +91,11 @@ class Cartserialiser(serializers.ModelSerializer):
     class Meta:
         model = Cart
         fields = ['cartnumber', 'barcode', 'currentuser','isreserved']
+
+        
+class recommendationsserialiser(serializers.ModelSerializer):
+    class Meta:
+        model = Product
+        fields = ['id', 'name','image']
+
+
