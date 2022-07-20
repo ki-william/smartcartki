@@ -6,8 +6,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from rest_framework.authtoken.models import Token
 from django.contrib.auth.models import AbstractUser
-import random
-from django.utils.encoding import smart_str
+
 
 class Product(models.Model):
     name = models.CharField(max_length=256)
@@ -16,7 +15,6 @@ class Product(models.Model):
     Quantity = models.IntegerField(default=0)
     image = models.ImageField(upload_to="products")
     barcode = models.CharField(max_length=256, blank=True, null=False)
-    weight = models.DecimalField(max_digits=7, decimal_places=2,default=0)
 
     def __str__(self):
         return self.name
@@ -25,18 +23,22 @@ class Product(models.Model):
 class UserProfile(AbstractUser):
     image = models.ImageField(upload_to="users",
                               blank=True)
-    balance = models.DecimalField(default=0.0,
+    balance = models.DecimalField(default=1000,
                                   max_digits=99,
                                   decimal_places=3)
 
 
 class Cart(models.Model):
-    cartnumber = models.IntegerField(default=0, null=True, blank=True)
-    barcode = models.CharField(max_length=256, blank=True, null=True)
-    isreserved = models.BooleanField(default=False)
-    currentuser = models.ForeignKey(UserProfile,
-                                on_delete=models.CASCADE,
-                                related_name="UserProfile", null=True)
+    occupied = models.BooleanField(default=False)
+
+
+rates = (
+        ("very bad" , "very bad" ),
+        ("bad"      , "bad"      ),
+        ("good"     , "good"     ),
+        ("very good", "very good"),
+        ("perfect"  , "perfect"  ),
+    )
 
 class Order(models.Model):
     customer = models.ForeignKey(settings.AUTH_USER_MODEL,
@@ -49,11 +51,10 @@ class Order(models.Model):
                              blank=True)
     date_ordered = models.DateTimeField(auto_now_add=True)
     complete = models.BooleanField(default=False)
-    transaction_id = models.CharField(max_length=100, blank=True,null=True)
+    transaction_id = models.CharField(max_length=100, null=True)
+    total_price= models.IntegerField(default=0,null=True,blank=True)
 
-    class Meta:
-        ordering = ["customer", ]
-
+   
     def __str__(self):
         return str(self.id)
 
@@ -65,48 +66,25 @@ class OrderItem(models.Model):
                               on_delete=models.SET_NULL,null=True)
     quantity = models.IntegerField(default=0, null=True, blank=True)
     date_added = models.DateTimeField(auto_now_add=True)
+    price = models.IntegerField(default=0, null=True, blank=True)
 
-rates = (
-        (1     , 1      ),
-        (2     , 2     ),
-        (3 , 3),
-        (4,4  ),
-        (5, 5),
 
-    )
 class Rate (models.Model):
-    product = models.ForeignKey(Product, on_delete=models.CASCADE,null=True)   
+    product = models.ForeignKey(Product, on_delete=models.CASCADE,null=True)
     customer = models.ForeignKey(settings.AUTH_USER_MODEL,
                                  on_delete=models.CASCADE,
                                  null=True,
                                  blank=True)
-    rate = models.IntegerField(choices=rates, max_length= 50, default=1)
-
-
-####
-#class Vcart(models.Model):
-#    vcartid = models.IntegerField(default=0, null=True, blank=True)
-#    user = models.ForeignKey(Product, on_delete=models.CASCADE,
-#                                related_name="UserProfile", null=True)
-#    cart = models.ForeignKey(Cart,
-#                             on_delete=models.CASCADE,
-#                             null=True,
-#                             blank=True)
-#
-####
-#    order = models.ForeignKey(Order, related_name="orderItems",
-#                              on_delete=models.SET_NULL,null=True)
-#    date_added = models.DateTimeField(auto_now_add=True)
-
-####
-
-
-
-
-
-
+    rate = models.CharField(choices=rates, max_length= 50, default='1')
 
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
 def create_auth_token(sender, instance=None, created=False, **kwargs):
     if created:
         Token.objects.create(user=instance)
+
+
+
+class Usedtransactions(models.Model):
+    transactionid = models.IntegerField(default=0, null=True, blank=False)
+    username = models.CharField(max_length=256)
+

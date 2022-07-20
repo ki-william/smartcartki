@@ -1,4 +1,4 @@
-from django.urls import path,include
+from django.urls import path
 from rest_framework.authtoken import views as v
 from . import views
 
@@ -15,26 +15,20 @@ urlpatterns = [
 
 
     path('api/products', views.products_list , name="product-list"),
-
     path('api/orders', views.orders_list , name="orders-list"),
 
     path('api/all-users', views.get_all_users, name="all-users"),
     path('api/all-rates', views.get_all_rates, name="all-rates"),
+
+
+    path('api/login-cart', views.send_and_receive_1, name="login-cart"),
+    path('api/confirm-login-cart', views.send_and_receive_2, name="confirm-login-cart"),
+    path('api/logout-cart', views.send_and_receive_3, name="logout-cart"), 
+    path('api/confirm-logout-cart', views.send_and_receive_4, name="confirm-logout-cart"),
     
-    path('api/all-rates', views.get_all_products, name="all-products"),
-
-    path('api/ml-ratings', views.mlmodel, name="mlmodel"),
-    path('api/product', views.specificproduct, name="specificproduct"),
-
-    path('api/carts', views.carts, name="carts"),
-
-    path('api/cart', views.cart, name="cart"),
-
-    path('api/reservercart', views.reservercart, name="reservercart"),
-
-    path('api/unreservercart', views.unreservecart, name="unreservecart"),
-
-    path('__debug__/', include('debug_toolbar.urls')),
+    
+    path('api/recommendations', views.recommendations, name="recommendations"),
+    path('api/recharge', views.recharge, name="recharge"),
 
 
 ]

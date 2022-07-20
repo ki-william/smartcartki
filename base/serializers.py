@@ -1,6 +1,6 @@
 from itertools import product
 from rest_framework import serializers
-from .models import Cart, OrderItem, Product, Order, UserProfile,Rate
+from .models import OrderItem, Product, Order, UserProfile,Rate
 from django.contrib.auth.models import User
 from django.utils import timezone
 
@@ -12,19 +12,13 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserProfile
-        fields = ('username', 'first_name', 'last_name', 'email', 'balance','password','image')
+        fields = ('username', 'first_name', 'last_name', 'email', 'balance','password')
 
     def create(self, validated_data):
         user = super(UserProfileSerializer, self).create(validated_data)
         user.set_password(validated_data['password'])
         user.save()
         return user
-
-class UserProfileSerializer2(serializers.ModelSerializer):
-
-    class Meta:
-        model = UserProfile
-        fields = ('username')
 
 
 #
@@ -38,7 +32,7 @@ class UserProfileSerializer2(serializers.ModelSerializer):
 class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
-        fields = ['id', 'name', 'description', 'price', 'Quantity', 'image','weight','barcode']
+        fields = ['id', 'name', 'description', 'price', 'Quantity', 'image']
 
 
 class OrderItemSerializer(serializers.ModelSerializer):
@@ -46,7 +40,7 @@ class OrderItemSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = OrderItem
-        fields = ['product', 'quantity']
+        fields = ['product', 'quantity',"price"]
 
 
 class OrderSerializer(serializers.ModelSerializer):
@@ -55,34 +49,18 @@ class OrderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = ['id', 'customer', 'cart', 'date_ordered', 'complete','orderItems','transaction_id']
+        fields = ['id', 'customer', 'cart', 'date_ordered', 'complete','orderItems','total_price']
 
 class RateSerializer(serializers.ModelSerializer):
     customer = serializers.StringRelatedField(read_only=True)
     product = serializers.StringRelatedField(read_only=True)
+
    
     class Meta:
         model = Rate
         fields = "__all__"
 
-
-
-###############
-class productPictureSerialiser(serializers.ModelSerializer):
-
-    image_url = serializers.SerializerMethodField('get_image_url')
-
+class recommendationsserialiser(serializers.ModelSerializer):
     class Meta:
         model = Product
-        fields = ('image')
-
-    def get_image_url(self, obj):
-        return obj.image.url
-
-
-
-class Cartserialiser(serializers.ModelSerializer):
-    #currentuser = UserProfileSerializer2(many=True, read_only=True)
-    class Meta:
-        model = Cart
-        fields = ['cartnumber', 'barcode', 'currentuser','isreserved']
+        fields = ['id', 'name','image']
